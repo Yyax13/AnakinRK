@@ -9,7 +9,7 @@ all: $(OUT)/$(TARGET)
 $(OUT)/$(TARGET):
 	mkdir -p $(BUILD) $(OUT)
 	$(MAKE) -C $(KDIR) M=$(SRC) modules
-	mv $(SRC)/*.o $(SRC)/*.mod* $(SRC)/*.cmd $(SRC)/.*.cmd $(SRC)/.*.o $(SRC)/*.order $(SRC)/*.symvers $(BUILD) 2>/dev/null || true
+	mv $(SRC)/*.o $(SRC)/*.mod* $(SRC)/*.cmd $(SRC)/.*.cmd $(SRC)/.*.o $(SRC)/*.order $(SRC)/*.symvers $(SRC)/*/*.o $(SRC)/*/*.mod* $(SRC)/*/*.cmd $(SRC)/*/.*.cmd $(SRC)/*/.*.o $(SRC)/*/*.order $(SRC)/*/*.symvers $(BUILD) 2>/dev/null || true
 	mv $(SRC)/$(TARGET) $(OUT)/
 
 clean:
