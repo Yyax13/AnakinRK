@@ -10,6 +10,9 @@ AnakinRK is a lightweight Linux kernel module that demonstrates rootkit techniqu
 * **Module Visibility Toggle**
   The module can hide or unhide itself from `/proc/modules` and `lsmod`.
 
+* **TCP Ports Hiding**
+  The module can hide or unhide any TCP port
+
 * **Kernel Module Loading Prevention**
   Hooks `init_module` and `finit_module` so that module insertion appears to succeed but no module is actually loaded.
 
@@ -173,7 +176,7 @@ When the signal is detected, the PID value is interpreted as a command:
 | `0x726f6f74`    | Get root    |
 | `0x68696465`    | Toggle hide |
 | `0x68656c70`    | Help menu   |
-| `Any untill 65535` | Toggle hidden port |
+| `Any until 65535` | Toggle hidden port |
 ---
 
 ## Kernel Compatibility
