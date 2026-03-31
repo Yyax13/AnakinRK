@@ -1,0 +1,19 @@
+CompileFlags:
+  Add: [
+    "-D__KERNEL__",
+    "-DMODULE",
+    "-I/usr/lib/modules/6.12.10-76061203-generic/build/include",
+    "-I/usr/lib/modules/6.12.10-76061203-generic/build/arch/x86/include",
+    "-I/usr/lib/modules/6.12.10-76061203-generic/build/arch/x86/include/generated",
+    "-I/usr/lib/modules/6.12.10-76061203-generic/build/include/generated"
+  ]
+
+  Remove: [
+    "-mpreferred-stack-boundary=3",
+    "-fconserve-stack",
+    "-mrecord-mcount",
+    "-mindirect-branch=thunk-extern",
+    "-mindirect-branch-register",
+    "-fno-allow-store-data-races",
+    "-fsanitize=bounds-strict"
+  ]
