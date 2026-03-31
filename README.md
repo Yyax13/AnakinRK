@@ -25,14 +25,21 @@ AnakinRK is a lightweight Linux kernel module that demonstrates rootkit techniqu
 
 ```
 .
+├── assets/                         # Assets for github
+├── build/                          # Compiled anakin.ko
+├── .build-artifacts/               # Intermediate object files
 ├── Makefile
-├── build/                      # Compiled anakin.ko
-├── .build-artifacts/           # Intermediate object files
-└── src/
-    ├── Makefile
-    ├── ftrace_helper.c
-    ├── ftrace_helper.h
-    └── rk.c                    # Main rootkit logic
+├── README.md
+└── src
+    ├── ftrace/                     # ftrace helper by xcellerator (MatheuZSecurity's fork)
+    ├── hooks/                      # Syscalls and internals hooks
+    ├── include/                    # Include linux kernel headers
+    ├── include_hooks/              # Definitions for hooks
+    ├── include_modules             # Definitions for modules
+    ├── main.c                      # Main file and orchestrator
+    ├── Makefile                    # Internal Makefile (haven't targets)
+    └── modules                     # Modules implementations
+
 ```
 
 ---
@@ -42,7 +49,7 @@ AnakinRK is a lightweight Linux kernel module that demonstrates rootkit techniqu
 Make sure kernel headers for the running kernel are installed.
 
 ```bash
-make
+make build
 ```
 
 The module will be generated at:
@@ -83,13 +90,31 @@ Anakin killed padmé
 
 ## Usage
 
-The rootkit hooks `sys_kill` and listens for a **magic signal (67)**.
+The rootkit hooks `sys_kill` and listens for a **magic signal **.
 Commands are triggered by sending this signal with a specific **PID value**.
 
-### Magic Signal
+### How to use
 
+Check help table with:
+
+```bash
+sudo dmesg -Wl debug
 ```
-67
+
+In other terminal (without closing the `dmesg` process) run:
+
+```bash
+kill -67 $(printf "%d" 0x$(printf "%4.s" "help" | xxd -p))
+```
+
+### rk-helper
+
+The trigger is so long, you should want to use this helper:
+
+```bash
+rk-helper () {
+	printf "%d" 0x$(printf "%.4s" "$1" | xxd -p)
+}
 ```
 
 ---
@@ -99,7 +124,7 @@ Commands are triggered by sending this signal with a specific **PID value**.
 ### 1. Get Root
 
 ```bash
-kill -67 $(printf "%d" 0x$(printf "root" | xxd -p))
+kill -67 $(rk-helper root)
 ```
 
 Grants root privileges (UID/GID = 0) to the calling process.
@@ -109,7 +134,7 @@ Grants root privileges (UID/GID = 0) to the calling process.
 ### 2. Hide / Unhide Module
 
 ```bash
-kill -67 $(printf "%d" 0x$(printf "hide" | xxd -p))
+kill -67 $(rk-helper hide)
 ```
 
 Toggles visibility of the module from:
@@ -119,41 +144,36 @@ Toggles visibility of the module from:
 
 ---
 
-### 3. Show Help Menu (Kernel Log)
+### 3. Toggle hidden ports
 
 ```bash
-kill -67 $(printf "%d" 0x$(printf "help" | xxd -p))
+kill -69 <port>
+```
+
+---
+
+### 4. Show Help Menu (Kernel Log)
+
+```bash
+kill -67 $(rk-helper help)
 ```
 
 Prints a command table to `dmesg`.
 
 ---
 
-## Example
-
-```bash
-kill -67 $(printf "%d" 0x$(printf "help" | xxd -p))
-dmesg | tail
-```
-
----
-
 ## How It Works
 
-The module installs three hooks using ftrace:
+The module installs hooks using ftrace:
 
-* `__x64_sys_kill`
-* `__x64_sys_init_module`
-* `__x64_sys_finit_module`
-
-When signal `67` is detected, the PID value is interpreted as a command:
+When the signal is detected, the PID value is interpreted as a command:
 
 | PID value (hex) | Command     |
 | --------------- | ----------- |
 | `0x726f6f74`    | Get root    |
 | `0x68696465`    | Toggle hide |
 | `0x68656c70`    | Help menu   |
-
+| `Any untill 65535` | Toggle hidden port |
 ---
 
 ## Kernel Compatibility
